@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import requests
-from bs4 import BeautifulSoup
 import random
 import urllib.parse
 
@@ -27,19 +26,25 @@ country_seeds = {
     "portugal": "melhor maneira", 
     "denmark": "bedste metode", 
     "usa": "best way to", 
-    "netherlands": "beste manier"
+    "netherlands": "beste manier",
+    "uk": "best way to", 
+    "australia": "best way to", 
+    "spain": "mejor forma", 
+    "finland": "paras tapa", 
+    "slovenia": "najboljši način", 
+    "romania": "cea mai bună metodă", 
+    "norway": "beste måte", 
+    "czech republic": "nejlepší způsob", 
+    "turkey": "en iyi yol"
 }
 
+# NEW autocomplete-based keyword scraper
 def generate_keywords_from_seed(seed):
     try:
-        query = urllib.parse.quote(seed)
-        url = f"https://www.google.com/search?q={query}&hl=en"
+        url = f"https://suggestqueries.google.com/complete/search?client=firefox&q={urllib.parse.quote(seed)}"
         res = requests.get(url, headers=get_headers(), timeout=5)
-        soup = BeautifulSoup(res.text, 'html.parser')
-        suggestions = soup.find_all('div', class_='BNeawe s3v9rd AP7Wnd')
-        keywords = [s.text for s in suggestions if len(s.text.split()) > 2 and not s.text.startswith("https")]
-        unique_keywords = list(dict.fromkeys(keywords))
-        return unique_keywords[:10] if unique_keywords else ["No keywords found."]
+        suggestions = res.json()[1]
+        return suggestions[:10] if suggestions else ["No keywords found."]
     except Exception as e:
         return [f"Error: {str(e)}"]
 
